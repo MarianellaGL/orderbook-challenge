@@ -52,6 +52,7 @@ interface InternalState {
   isInitialized: boolean;
   isPausedInternal: boolean;
   currentSymbol: string;
+  connectionId: number;
 }
 
 let internal: InternalState = {
@@ -68,10 +69,12 @@ let internal: InternalState = {
   isInitialized: false,
   isPausedInternal: false,
   currentSymbol: "BTCUSDT",
+  connectionId: 0,
 };
 
 function resetInternal(preservePaused = false, newSymbol?: string) {
   const wasPaused = internal.isPausedInternal;
+  const nextConnectionId = internal.connectionId + 1;
   internal = {
     bidsMap: new Map(),
     asksMap: new Map(),
@@ -86,6 +89,7 @@ function resetInternal(preservePaused = false, newSymbol?: string) {
     isInitialized: false,
     isPausedInternal: preservePaused ? wasPaused : false,
     currentSymbol: newSymbol ?? internal.currentSymbol,
+    connectionId: nextConnectionId,
   };
 }
 
@@ -185,11 +189,19 @@ export const useOrderbookStore = create<OrderbookState>()(
       internal.isInitialized = false;
       internal.pendingDeltas = [];
 
+      const thisConnectionId = internal.connectionId;
+
       internal.cleanupWs = createDepthWebSocket({
         symbol,
         onMessage: handleDelta,
-        onOpen: () => synchronize(),
+        onOpen: () => {
+          if (thisConnectionId !== internal.connectionId) return;
+          synchronize();
+        },
         onClose: (wasClean, code) => {
+          // Ignore callbacks from stale connections
+          if (thisConnectionId !== internal.connectionId) return;
+
           internal.cleanupWs = null;
 
           if (internal.isIntentionalClose) {
@@ -205,6 +217,9 @@ export const useOrderbookStore = create<OrderbookState>()(
           scheduleReconnect();
         },
         onError: () => {
+          // Ignore callbacks from stale connections
+          if (thisConnectionId !== internal.connectionId) return;
+
           if (!internal.isIntentionalClose) {
             set({
               status: "reconnecting",
@@ -237,12 +252,15 @@ export const useOrderbookStore = create<OrderbookState>()(
     const cleanup = () => {
       if (internal.batchTimeout) {
         clearTimeout(internal.batchTimeout);
+        internal.batchTimeout = null;
       }
       if (internal.reconnectTimeout) {
         clearTimeout(internal.reconnectTimeout);
+        internal.reconnectTimeout = null;
       }
       if (internal.cleanupWs) {
         internal.cleanupWs();
+        internal.cleanupWs = null;
       }
     };
 
@@ -290,18 +308,6 @@ export const useOrderbookStore = create<OrderbookState>()(
         internal.isPausedInternal = true;
         internal.isIntentionalClose = true;
         cleanup();
-        if (internal.batchTimeout) {
-          clearTimeout(internal.batchTimeout);
-          internal.batchTimeout = null;
-        }
-        if (internal.reconnectTimeout) {
-          clearTimeout(internal.reconnectTimeout);
-          internal.reconnectTimeout = null;
-        }
-        if (internal.cleanupWs) {
-          internal.cleanupWs();
-          internal.cleanupWs = null;
-        }
         set({ status: "disconnected", isPaused: true });
       },
 

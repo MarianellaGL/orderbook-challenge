@@ -47,6 +47,8 @@ export function createDepthWebSocket(config: WebSocketConfig): () => void {
   };
 
   return () => {
-    ws.close();
+    if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+      ws.close();
+    }
   };
 }
