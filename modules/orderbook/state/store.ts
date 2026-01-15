@@ -145,11 +145,16 @@ export const useOrderbookStore = create<OrderbookState>()(
       }
     };
 
-    const synchronize = async () => {
+    const synchronize = async (forConnectionId: number) => {
       const { symbol } = get();
 
       try {
         const snapshot = await fetchRawSnapshot(symbol);
+
+        if (forConnectionId !== internal.connectionId || internal.isIntentionalClose) {
+          return;
+        }
+
         const { bidsMap, asksMap } = initializeFromSnapshot(
           snapshot.bids,
           snapshot.asks
@@ -176,7 +181,16 @@ export const useOrderbookStore = create<OrderbookState>()(
           error: null,
         });
       } catch (error) {
+        if (forConnectionId !== internal.connectionId || internal.isIntentionalClose) {
+          return;
+        }
+
         console.error("Failed to synchronize:", error);
+        if (internal.cleanupWs) {
+          internal.cleanupWs();
+          internal.cleanupWs = null;
+        }
+        set({ status: "reconnecting", error: error instanceof Error ? error : new Error("Sync failed") });
         scheduleReconnect();
       }
     };
@@ -196,10 +210,9 @@ export const useOrderbookStore = create<OrderbookState>()(
         onMessage: handleDelta,
         onOpen: () => {
           if (thisConnectionId !== internal.connectionId) return;
-          synchronize();
+          synchronize(thisConnectionId);
         },
         onClose: (wasClean, code) => {
-          // Ignore callbacks from stale connections
           if (thisConnectionId !== internal.connectionId) return;
 
           internal.cleanupWs = null;
@@ -217,7 +230,6 @@ export const useOrderbookStore = create<OrderbookState>()(
           scheduleReconnect();
         },
         onError: () => {
-          // Ignore callbacks from stale connections
           if (thisConnectionId !== internal.connectionId) return;
 
           if (!internal.isIntentionalClose) {

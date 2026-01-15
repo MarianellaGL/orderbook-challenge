@@ -31,21 +31,21 @@ export default function Home() {
   const hasData = bids.length > 0;
 
   return (
-    <main className="min-h-screen bg-gray-950 text-gray-100 p-4 sm:p-6 lg:p-8">
+    <main className="min-h-screen bg-gray-950 text-gray-100 p-3 xs:p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-10">
-          <h1 className="text-2xl sm:text-3xl font-light tracking-tight">Market Depth</h1>
+        <header className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 xs:gap-4 mb-4 xs:mb-6 sm:mb-10">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-light tracking-tight">Market Depth</h1>
           <AssetSelector selectedPair={symbol} onPairChange={setSymbol} />
         </header>
 
         {isPaused && (
-          <div className="mb-4 px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-gray-400 text-sm text-center">
+          <div className="mb-3 xs:mb-4 px-3 xs:px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-gray-400 text-xs xs:text-sm text-center">
             Paused - Switch back to resume updates
           </div>
         )}
 
         {status === "reconnecting" && !isPaused && hasData && (
-          <div className="mb-4 px-4 py-2 bg-yellow-900/30 border border-yellow-700/50 rounded-lg text-yellow-400 text-sm text-center">
+          <div className="mb-3 xs:mb-4 px-3 xs:px-4 py-2 bg-yellow-900/30 border border-yellow-700/50 rounded-lg text-yellow-400 text-xs xs:text-sm text-center">
             Reconnecting...
           </div>
         )}
@@ -65,7 +65,7 @@ export default function Home() {
 
         {!error && (
           <>
-            <div className="bg-gray-900/50 backdrop-blur rounded-2xl border border-gray-800/50 p-4 sm:p-6 mb-6 sm:mb-8">
+            <div className="bg-gray-900/50 backdrop-blur rounded-xl sm:rounded-2xl border border-gray-800/50 p-3 xs:p-4 sm:p-6 mb-4 xs:mb-6 sm:mb-8">
               {hasData ? (
                 <>
                   <Spread
@@ -82,34 +82,36 @@ export default function Home() {
                   />
                 </>
               ) : (
-                <div className="h-48 sm:h-64 flex items-center justify-center">
+                <div className="h-40 xs:h-48 sm:h-64 flex items-center justify-center">
                   <div className="w-6 h-6 border-2 border-gray-700 border-t-gray-400 rounded-full animate-spin" />
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              {hasData ? (
-                <>
-                  <OrderBookSide
-                    orders={bids}
-                    maxTotal={maxTotal}
-                    type="bid"
-                    pricePrecision={pricePrecision}
-                  />
-                  <OrderBookSide
-                    orders={asks}
-                    maxTotal={maxTotal}
-                    type="ask"
-                    pricePrecision={pricePrecision}
-                  />
-                </>
-              ) : (
-                <>
-                  <div className="bg-gray-900/50 rounded-xl sm:rounded-2xl border border-gray-800/50 h-96 animate-pulse" />
-                  <div className="bg-gray-900/50 rounded-xl sm:rounded-2xl border border-gray-800/50 h-96 animate-pulse" />
-                </>
-              )}
+            <div className="max-h-[60vh] sm:max-h-[70vh] md:max-h-none overflow-y-auto rounded-xl sm:rounded-2xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 xs:gap-4 sm:gap-6">
+                {hasData ? (
+                  <>
+                    <OrderBookSide
+                      orders={bids}
+                      maxTotal={maxTotal}
+                      type="bid"
+                      pricePrecision={pricePrecision}
+                    />
+                    <OrderBookSide
+                      orders={asks}
+                      maxTotal={maxTotal}
+                      type="ask"
+                      pricePrecision={pricePrecision}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <div className="bg-gray-900/50 rounded-xl sm:rounded-2xl border border-gray-800/50 h-96 animate-pulse" />
+                    <div className="bg-gray-900/50 rounded-xl sm:rounded-2xl border border-gray-800/50 h-96 animate-pulse" />
+                  </>
+                )}
+              </div>
             </div>
           </>
         )}

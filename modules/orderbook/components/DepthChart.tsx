@@ -3,7 +3,7 @@
 import { memo, useMemo } from "react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { OrderLevel } from "../types";
-import { formatPrice, formatQuantity } from "../../shared";
+import { formatPrice, formatQuantity, useBreakpoint } from "../../shared";
 
 interface DepthChartProps {
   bids: OrderLevel[];
@@ -14,6 +14,8 @@ interface DepthChartProps {
 
 
 export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision }: DepthChartProps) {
+  const { isMobile, isAtLeast } = useBreakpoint();
+
   const depthData = useMemo(() => [
     ...bids
       .slice()
@@ -22,10 +24,19 @@ export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision 
     ...asks.map((a) => ({ price: a.price, bids: null, asks: a.total })),
   ], [bids, asks]);
 
+  const chartConfig = useMemo(() => ({
+    fontSize: isMobile ? 8 : isAtLeast("md") ? 10 : 9,
+    yAxisWidth: isMobile ? 35 : isAtLeast("md") ? 50 : 40,
+    strokeWidth: isMobile ? 1 : 1.5,
+    margin: isMobile
+      ? { top: 5, right: 2, left: 0, bottom: 0 }
+      : { top: 5, right: 5, left: 0, bottom: 0 },
+  }), [isMobile, isAtLeast]);
+
   return (
-    <div className="h-48 sm:h-64">
+    <div className="h-36 xs:h-44 sm:h-56 md:h-64">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={depthData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+        <AreaChart data={depthData} margin={chartConfig.margin}>
           <defs>
             <linearGradient id="bidGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
@@ -40,14 +51,15 @@ export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision 
             dataKey="price"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#6b7280", fontSize: 10 }}
+            tick={{ fill: "#6b7280", fontSize: chartConfig.fontSize }}
             tickFormatter={(v) => formatPrice(v, pricePrecision)}
+            interval="preserveStartEnd"
           />
           <YAxis
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#6b7280", fontSize: 10 }}
-            width={50}
+            tick={{ fill: "#6b7280", fontSize: chartConfig.fontSize }}
+            width={chartConfig.yAxisWidth}
             tickFormatter={(v) => formatQuantity(v)}
           />
           <Tooltip
@@ -64,7 +76,7 @@ export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision 
             type="stepAfter"
             dataKey="bids"
             stroke="#10b981"
-            strokeWidth={2}
+            strokeWidth={chartConfig.strokeWidth}
             fill="url(#bidGradient)"
             connectNulls={false}
           />
@@ -72,7 +84,7 @@ export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision 
             type="stepAfter"
             dataKey="asks"
             stroke="#f43f5e"
-            strokeWidth={2}
+            strokeWidth={chartConfig.strokeWidth}
             fill="url(#askGradient)"
             connectNulls={false}
           />
