@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Orderbook Viewer
 
-## Getting Started
+A real-time orderbook viewer built with React and Next.js that displays live market depth data from Binance.
 
-First, run the development server:
+## Quick Start
+
+### Docker (Recommended)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker build -t orderbook-challenge .
+docker run -p 3000:3000 orderbook-challenge
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Local Development
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+## Features
 
-To learn more about Next.js, take a look at the following resources:
+### Core Requirements
+- **Asset Selector**: 5 trading pairs (BTC, ETH, SOL, BNB, XRP)
+- **Orderbook Display**: 10 levels for bids and asks with color coding
+- **Live Updates**: WebSocket connection with real-time data
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Bonus Features
+- **Spread Indicator**: Shows spread value and percentage
+- **Depth Visualization**: Horizontal bars showing relative volume
+- **WebSocket**: Real-time updates instead of polling
+- **Unit Tests**: 25 tests covering core logic
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Architecture & Design Decisions
 
-## Deploy on Vercel
+### State Management: Zustand
+Chose Zustand over Context API for:
+- Built-in selector support prevents unnecessary re-renders
+- No provider wrapper needed
+- Simple API with minimal boilerplate
+- SSR compatible out of the box
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Data Structure: Map-based Storage
+Order levels are stored in `Map<string, number>` for O(1) price lookups when applying deltas, then converted to sorted arrays only when rendering.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### WebSocket Strategy
+Using Binance's diff depth stream (`@depth@1000ms`) with snapshot synchronization:
+1. Connect to WebSocket, buffer incoming deltas
+2. Fetch REST snapshot
+3. Apply buffered deltas where `updateId > snapshotId`
+4. Continue processing live deltas
+
+This ensures no data gaps between snapshot and live stream.
+
+### Performance Optimizations
+- **Batched Updates**: UI updates every 3 seconds to reduce renders
+- **Delta Deduplication**: Skip updates when quantity hasn't changed
+- **Visibility API**: Pause WebSocket when tab is hidden to save resources
+- **Memoization**: `React.memo` with custom comparators on order rows
+- **Pending Buffer Limit**: Cap at 50 deltas to prevent memory buildup
+
+### Responsive Design
+Mobile-first approach using Tailwind breakpoints:
+- Single column layout on mobile
+- Two column orderbook on tablet+
+- Adaptive font sizes and spacing
+
+## Trade-offs
+
+| Decision | Trade-off |
+|----------|-----------|
+| 3s batch interval | Slower UI updates but significantly lower resource usage |
+| 1s WebSocket stream | Less granular than 100ms but 10x fewer messages |
+| Client-side only | No SSR for orderbook data, but simpler architecture |
+| Fixed 10 levels | Limited depth view but consistent performance |
+
+## Project Structure
+
+```
+modules/
+├── orderbook/
+│   ├── api/           # Binance REST client
+│   ├── components/    # UI components
+│   ├── hooks/         # Custom hooks
+│   ├── realtime/      # WebSocket & reconciliation
+│   ├── state/         # Zustand store
+│   └── types.ts       # TypeScript types
+└── shared/
+    ├── config.ts      # Environment config
+    └── format.ts      # Number formatting
+```
+
+## What I Would Improve With More Time
+
+1. **Web Worker**: Move WebSocket and delta processing to a worker thread
+2. **Virtual Scrolling**: For displaying more than 10 levels efficiently
+3. **Connection Quality Indicator**: Show latency and message rate
+4. **Price Alerts**: Notify when price crosses thresholds
+5. **Historical Depth**: Show depth changes over time
+6. **E2E Tests**: Playwright tests for critical user flows
+7. **Error Boundary**: Better error recovery with retry logic
+
+## Configuration
+
+Environment variables (`.env.local`):
+
+```env
+NEXT_PUBLIC_BINANCE_REST_URL=https://api.binance.com/api/v3
+NEXT_PUBLIC_BINANCE_WS_URL=wss://stream.binance.com:9443/ws
+NEXT_PUBLIC_BATCH_INTERVAL_MS=3000
+NEXT_PUBLIC_MAX_LEVELS=10
+```
+
+## Testing
+
+```bash
+npm test
+```
+
+Runs 25 tests covering:
+- Delta application logic
+- Snapshot initialization
+- Price/quantity formatting
+- Update ID validation
