@@ -5,6 +5,19 @@ import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from "rec
 import { OrderLevel } from "../types";
 import { formatPrice, formatQuantity, useBreakpoint } from "../../shared";
 
+function formatCompactQuantity(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  if (value >= 1) return value.toFixed(2);
+  return value.toPrecision(2);
+}
+
+function formatCompactPrice(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return value.toFixed(2);
+}
+
 interface DepthChartProps {
   bids: OrderLevel[];
   asks: OrderLevel[];
@@ -53,7 +66,7 @@ export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision,
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#6b7280", fontSize: chartConfig.fontSize }}
-            tickFormatter={(v) => formatPrice(v, pricePrecision)}
+            tickFormatter={formatCompactPrice}
             interval="preserveStartEnd"
           />
           <YAxis
@@ -61,7 +74,7 @@ export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision,
             tickLine={false}
             tick={{ fill: "#6b7280", fontSize: chartConfig.fontSize }}
             width={chartConfig.yAxisWidth}
-            tickFormatter={(v) => formatQuantity(v, quantityPrecision)}
+            tickFormatter={formatCompactQuantity}
           />
           <Tooltip
             contentStyle={{

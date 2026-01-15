@@ -19,8 +19,10 @@ export function formatQuantity(quantity: number, precision: number = DEFAULT_QUA
 }
 
 export function formatSpreadPercent(spread: number, bestBid: number): string {
-  if (bestBid <= 0) return "0.00";
-  return ((spread / bestBid) * 100).toLocaleString(LOCALE, {
+  if (bestBid <= 0) return "< 0.01";
+  const percent = (spread / bestBid) * 100;
+  if (percent > 0 && percent < 0.01) return "< 0.01";
+  return percent.toLocaleString(LOCALE, {
     minimumFractionDigits: SPREAD_PERCENT_DECIMALS,
     maximumFractionDigits: SPREAD_PERCENT_DECIMALS,
   });

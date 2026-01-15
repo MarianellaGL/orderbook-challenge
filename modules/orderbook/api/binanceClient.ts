@@ -17,7 +17,7 @@ interface BinanceExchangeInfoResponse {
       filterType: string;
       tickSize?: string;
     }[];
-    quotePrecision: number;
+    quoteAssetPrecision: number;
     baseAssetPrecision: number;
   }[];
 }
@@ -94,12 +94,11 @@ export async function fetchSymbolInfo(symbol: string): Promise<SymbolInfo> {
     (f) => f.filterType === "PRICE_FILTER"
   );
   const tickSize = priceFilter?.tickSize ? parseFloat(priceFilter.tickSize) : 0.01;
-  const pricePrecision = getPrecisionFromTickSize(tickSize);
 
   return {
     symbol: symbolData.symbol,
     tickSize,
-    pricePrecision,
+    pricePrecision: getPrecisionFromTickSize(tickSize),
     quantityPrecision: symbolData.baseAssetPrecision,
   };
 }

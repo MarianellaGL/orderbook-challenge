@@ -361,8 +361,10 @@ export const useSpreadPercent = () =>
     const bestBid = s.bids[0]?.price ?? 0;
     const bestAsk = s.asks[0]?.price ?? 0;
     const spread = bestAsk - bestBid;
-    if (bestBid <= 0) return "0.00";
-    return ((spread / bestBid) * 100).toLocaleString("en-US", {
+    if (bestBid <= 0) return "< 0.01";
+    const percent = (spread / bestBid) * 100;
+    if (percent > 0 && percent < 0.01) return "< 0.01";
+    return percent.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
