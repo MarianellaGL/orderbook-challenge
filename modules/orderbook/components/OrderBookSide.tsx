@@ -9,6 +9,7 @@ interface OrderBookSideProps {
   maxTotal: number;
   type: "bid" | "ask";
   pricePrecision: number;
+  quantityPrecision: number;
 }
 
 
@@ -17,6 +18,7 @@ export const OrderBookSide = memo(function OrderBookSide({
   maxTotal,
   type,
   pricePrecision,
+  quantityPrecision,
 }: OrderBookSideProps) {
   const isBid = type === "bid";
 
@@ -44,6 +46,7 @@ export const OrderBookSide = memo(function OrderBookSide({
             maxTotal={maxTotal}
             type={type}
             pricePrecision={pricePrecision}
+            quantityPrecision={quantityPrecision}
           />
         ))}
       </div>

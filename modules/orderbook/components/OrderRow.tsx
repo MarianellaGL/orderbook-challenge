@@ -9,11 +9,12 @@ interface OrderRowProps {
   maxTotal: number;
   type: "bid" | "ask";
   pricePrecision: number;
+  quantityPrecision: number;
 }
 
 
 export const OrderRow = memo(
-  function OrderRow({ order, maxTotal, type, pricePrecision }: OrderRowProps) {
+  function OrderRow({ order, maxTotal, type, pricePrecision, quantityPrecision }: OrderRowProps) {
     const isBid = type === "bid";
     const depthPercent = maxTotal > 0 ? order.total / maxTotal : 0;
 
@@ -29,10 +30,10 @@ export const OrderRow = memo(
           {formatPrice(order.price, pricePrecision)}
         </span>
         <span className="relative text-right text-gray-300 tabular-nums">
-          {formatQuantity(order.quantity)}
+          {formatQuantity(order.quantity, quantityPrecision)}
         </span>
         <span className="relative text-right text-gray-500 tabular-nums">
-          {formatQuantity(order.total)}
+          {formatQuantity(order.total, quantityPrecision)}
         </span>
       </div>
     );
@@ -43,5 +44,6 @@ export const OrderRow = memo(
     prev.order.total === next.order.total &&
     prev.maxTotal === next.maxTotal &&
     prev.type === next.type &&
-    prev.pricePrecision === next.pricePrecision
+    prev.pricePrecision === next.pricePrecision &&
+    prev.quantityPrecision === next.quantityPrecision
 );

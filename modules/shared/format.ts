@@ -1,19 +1,20 @@
 
 const LOCALE = "en-US";
 const SPREAD_PERCENT_DECIMALS = 2;
-const MAX_QUANTITY_DECIMALS = 8;
+const PRICE_DECIMALS = 2;
+const DEFAULT_QUANTITY_DECIMALS = 8;
 
-export function formatPrice(price: number, precision: number): string {
+export function formatPrice(price: number, precision: number = PRICE_DECIMALS): string {
   return price.toLocaleString(LOCALE, {
     minimumFractionDigits: precision,
     maximumFractionDigits: precision,
   });
 }
 
-export function formatQuantity(quantity: number): string {
+export function formatQuantity(quantity: number, precision: number = DEFAULT_QUANTITY_DECIMALS): string {
   return quantity.toLocaleString(LOCALE, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: MAX_QUANTITY_DECIMALS,
+    minimumFractionDigits: precision,
+    maximumFractionDigits: precision,
   });
 }
 

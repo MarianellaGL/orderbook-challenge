@@ -18,7 +18,7 @@ import {
 export default function Home() {
   useVisibilityPause();
 
-  const { symbol, setSymbol, pricePrecision } = useOrderbook();
+  const { symbol, setSymbol, pricePrecision, quantityPrecision } = useOrderbook();
   const isPaused = useIsPaused();
 
   const { bids, isLoading: bidsLoading } = useOrderbookBids();
@@ -79,6 +79,7 @@ export default function Home() {
                     bids={bids}
                     asks={asks}
                     pricePrecision={pricePrecision}
+                    quantityPrecision={quantityPrecision}
                   />
                 </>
               ) : (
@@ -96,12 +97,14 @@ export default function Home() {
                     maxTotal={maxTotal}
                     type="bid"
                     pricePrecision={pricePrecision}
+                    quantityPrecision={quantityPrecision}
                   />
                   <OrderBookSide
                     orders={asks}
                     maxTotal={maxTotal}
                     type="ask"
                     pricePrecision={pricePrecision}
+                    quantityPrecision={quantityPrecision}
                   />
                 </>
               ) : (

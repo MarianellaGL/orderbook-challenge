@@ -9,11 +9,12 @@ interface DepthChartProps {
   bids: OrderLevel[];
   asks: OrderLevel[];
   pricePrecision: number;
+  quantityPrecision: number;
 }
 
 
 
-export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision }: DepthChartProps) {
+export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision, quantityPrecision }: DepthChartProps) {
   const { isMobile, isAtLeast } = useBreakpoint();
 
   const depthData = useMemo(() => [
@@ -60,7 +61,7 @@ export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision 
             tickLine={false}
             tick={{ fill: "#6b7280", fontSize: chartConfig.fontSize }}
             width={chartConfig.yAxisWidth}
-            tickFormatter={(v) => formatQuantity(v)}
+            tickFormatter={(v) => formatQuantity(v, quantityPrecision)}
           />
           <Tooltip
             contentStyle={{
@@ -70,7 +71,7 @@ export const DepthChart = memo(function DepthChart({ bids, asks, pricePrecision 
               fontSize: "11px",
             }}
             labelFormatter={(v) => `Price: ${formatPrice(Number(v), pricePrecision)}`}
-            formatter={(value, name) => [formatQuantity(Number(value)), name === "bids" ? "Bids" : "Asks"]}
+            formatter={(value, name) => [formatQuantity(Number(value), quantityPrecision), name === "bids" ? "Bids" : "Asks"]}
           />
           <Area
             type="stepAfter"
