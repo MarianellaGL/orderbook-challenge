@@ -1,7 +1,7 @@
 
 const LOCALE = "en-US";
-const QUANTITY_DECIMALS = 2;
 const SPREAD_PERCENT_DECIMALS = 2;
+const MAX_QUANTITY_DECIMALS = 8;
 
 export function formatPrice(price: number, precision: number): string {
   return price.toLocaleString(LOCALE, {
@@ -12,8 +12,8 @@ export function formatPrice(price: number, precision: number): string {
 
 export function formatQuantity(quantity: number): string {
   return quantity.toLocaleString(LOCALE, {
-    minimumFractionDigits: QUANTITY_DECIMALS,
-    maximumFractionDigits: QUANTITY_DECIMALS,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: MAX_QUANTITY_DECIMALS,
   });
 }
 

@@ -1,5 +1,3 @@
-
-
 function getEnvString(key: string, defaultValue: string): string {
   if (typeof window !== "undefined") {
     return process.env[key] ?? defaultValue;
@@ -29,13 +27,16 @@ export const config = {
   orderbook: {
     defaultSymbol: getEnvString("NEXT_PUBLIC_DEFAULT_SYMBOL", "BTCUSDT"),
     maxLevels: getEnvNumber("NEXT_PUBLIC_MAX_LEVELS", 10),
-    batchIntervalMs: getEnvNumber("NEXT_PUBLIC_BATCH_INTERVAL_MS", 3000),
+    batchIntervalMs: getEnvNumber("NEXT_PUBLIC_BATCH_INTERVAL_MS", 1000),
     maxPendingDeltas: getEnvNumber("NEXT_PUBLIC_MAX_PENDING_DELTAS", 50),
   },
 
   reconnect: {
-    initialDelayMs: getEnvNumber("NEXT_PUBLIC_RECONNECT_INITIAL_DELAY_MS", 3000),
-    maxDelayMs: getEnvNumber("NEXT_PUBLIC_RECONNECT_MAX_DELAY_MS", 30000),
+    initialDelayMs: getEnvNumber(
+      "NEXT_PUBLIC_RECONNECT_INITIAL_DELAY_MS",
+      1000
+    ),
+    maxDelayMs: getEnvNumber("NEXT_PUBLIC_RECONNECT_MAX_DELAY_MS", 10000),
     maxAttempts: getEnvNumber("NEXT_PUBLIC_RECONNECT_MAX_ATTEMPTS", 5),
   },
 } as const;

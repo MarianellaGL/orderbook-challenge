@@ -1,16 +1,15 @@
-
 import { config } from "../../shared";
 
 const WS_BASE_URL = config.binance.wsUrl;
 
 export interface DepthDelta {
-  e: string;  
-  E: number;  
-  s: string;  
-  U: number;  
-  u: number; 
-  b: [string, string][]; 
-  a: [string, string][]; 
+  e: string;
+  E: number;
+  s: string;
+  U: number;
+  u: number;
+  b: [string, string][];
+  a: [string, string][];
 }
 
 export interface WebSocketConfig {
@@ -20,7 +19,6 @@ export interface WebSocketConfig {
   onClose: (wasClean: boolean, code: number) => void;
   onError: () => void;
 }
-
 
 export function createDepthWebSocket(config: WebSocketConfig): () => void {
   const { symbol, onMessage, onOpen, onClose, onError } = config;
@@ -47,7 +45,10 @@ export function createDepthWebSocket(config: WebSocketConfig): () => void {
   };
 
   return () => {
-    if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+    if (
+      ws.readyState === WebSocket.OPEN ||
+      ws.readyState === WebSocket.CONNECTING
+    ) {
       ws.close();
     }
   };

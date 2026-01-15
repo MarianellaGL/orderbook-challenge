@@ -23,11 +23,13 @@ npm run dev
 ## Features
 
 ### Core Requirements
+
 - **Asset Selector**: 5 trading pairs (BTC, ETH, SOL, BNB, XRP)
 - **Orderbook Display**: 10 levels for bids and asks with color coding
 - **Live Updates**: WebSocket connection with real-time data
 
 ### Bonus Features
+
 - **Spread Indicator**: Shows spread value and percentage
 - **Depth Visualization**: Horizontal bars showing relative volume
 - **WebSocket**: Real-time updates instead of polling
@@ -36,17 +38,22 @@ npm run dev
 ## Architecture & Design Decisions
 
 ### State Management: Zustand
+
 Chose Zustand over Context API for:
+
 - Built-in selector support prevents unnecessary re-renders
 - No provider wrapper needed
 - Simple API with minimal boilerplate
 - SSR compatible out of the box
 
 ### Data Structure: Map-based Storage
+
 Order levels are stored in `Map<string, number>` for O(1) price lookups when applying deltas, then converted to sorted arrays only when rendering.
 
 ### WebSocket Strategy
+
 Using Binance's diff depth stream (`@depth@1000ms`) with snapshot synchronization:
+
 1. Connect to WebSocket, buffer incoming deltas
 2. Fetch REST snapshot
 3. Apply buffered deltas where `updateId > snapshotId`
@@ -55,26 +62,29 @@ Using Binance's diff depth stream (`@depth@1000ms`) with snapshot synchronizatio
 This ensures no data gaps between snapshot and live stream.
 
 ### Performance Optimizations
-- **Batched Updates**: UI updates every 3 seconds to reduce renders
+
+- **Batched Updates**: UI updates every 1 seconds to reduce renders
 - **Delta Deduplication**: Skip updates when quantity hasn't changed
 - **Visibility API**: Pause WebSocket when tab is hidden to save resources
 - **Memoization**: `React.memo` with custom comparators on order rows
 - **Pending Buffer Limit**: Cap at 50 deltas to prevent memory buildup
 
 ### Responsive Design
+
 Mobile-first approach using Tailwind breakpoints:
+
 - Single column layout on mobile
 - Two column orderbook on tablet+
 - Adaptive font sizes and spacing
 
 ## Trade-offs
 
-| Decision | Trade-off |
-|----------|-----------|
-| 3s batch interval | Slower UI updates but significantly lower resource usage |
-| 1s WebSocket stream | Less granular than 100ms but 10x fewer messages |
-| Client-side only | No SSR for orderbook data, but simpler architecture |
-| Fixed 10 levels | Limited depth view but consistent performance |
+| Decision            | Trade-off                                                |
+| ------------------- | -------------------------------------------------------- |
+| 1s batch interval   | Slower UI updates but significantly lower resource usage |
+| 1s WebSocket stream | Less granular than 100ms but 10x fewer messages          |
+| Client-side only    | No SSR for orderbook data, but simpler architecture      |
+| Fixed 10 levels     | Limited depth view but consistent performance            |
 
 ## Project Structure
 
@@ -120,6 +130,7 @@ npm test
 ```
 
 Runs 25 tests covering:
+
 - Delta application logic
 - Snapshot initialization
 - Price/quantity formatting

@@ -88,30 +88,28 @@ export default function Home() {
               )}
             </div>
 
-            <div className="max-h-[60vh] sm:max-h-[70vh] md:max-h-none overflow-y-auto rounded-xl sm:rounded-2xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 xs:gap-4 sm:gap-6">
-                {hasData ? (
-                  <>
-                    <OrderBookSide
-                      orders={bids}
-                      maxTotal={maxTotal}
-                      type="bid"
-                      pricePrecision={pricePrecision}
-                    />
-                    <OrderBookSide
-                      orders={asks}
-                      maxTotal={maxTotal}
-                      type="ask"
-                      pricePrecision={pricePrecision}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <div className="bg-gray-900/50 rounded-xl sm:rounded-2xl border border-gray-800/50 h-96 animate-pulse" />
-                    <div className="bg-gray-900/50 rounded-xl sm:rounded-2xl border border-gray-800/50 h-96 animate-pulse" />
-                  </>
-                )}
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 xs:gap-4 sm:gap-6">
+              {hasData ? (
+                <>
+                  <OrderBookSide
+                    orders={bids}
+                    maxTotal={maxTotal}
+                    type="bid"
+                    pricePrecision={pricePrecision}
+                  />
+                  <OrderBookSide
+                    orders={asks}
+                    maxTotal={maxTotal}
+                    type="ask"
+                    pricePrecision={pricePrecision}
+                  />
+                </>
+              ) : (
+                <>
+                  <div className="bg-gray-900/50 rounded-xl sm:rounded-2xl border border-gray-800/50 h-96 animate-pulse" />
+                  <div className="bg-gray-900/50 rounded-xl sm:rounded-2xl border border-gray-800/50 h-96 animate-pulse" />
+                </>
+              )}
             </div>
           </>
         )}
