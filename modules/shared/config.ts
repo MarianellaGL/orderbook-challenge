@@ -34,8 +34,9 @@ export const config = {
   },
 
   reconnect: {
-    initialDelayMs: getEnvNumber("NEXT_PUBLIC_RECONNECT_INITIAL_DELAY_MS", 1000),
+    initialDelayMs: getEnvNumber("NEXT_PUBLIC_RECONNECT_INITIAL_DELAY_MS", 3000),
     maxDelayMs: getEnvNumber("NEXT_PUBLIC_RECONNECT_MAX_DELAY_MS", 30000),
+    maxAttempts: getEnvNumber("NEXT_PUBLIC_RECONNECT_MAX_ATTEMPTS", 5),
   },
 } as const;
 

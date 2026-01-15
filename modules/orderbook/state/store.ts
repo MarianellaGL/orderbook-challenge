@@ -21,6 +21,7 @@ import { config } from "../../shared";
 const BATCH_INTERVAL_MS = config.orderbook.batchIntervalMs;
 const INITIAL_RECONNECT_DELAY_MS = config.reconnect.initialDelayMs;
 const MAX_RECONNECT_DELAY_MS = config.reconnect.maxDelayMs;
+const MAX_RECONNECT_ATTEMPTS = config.reconnect.maxAttempts;
 const MAX_PENDING_DELTAS = config.orderbook.maxPendingDeltas;
 
 interface OrderbookState {
@@ -50,6 +51,7 @@ interface InternalState {
   reconnectTimeout: ReturnType<typeof setTimeout> | null;
   isInitialized: boolean;
   isPausedInternal: boolean;
+  currentSymbol: string;
 }
 
 let internal: InternalState = {
@@ -65,9 +67,10 @@ let internal: InternalState = {
   reconnectTimeout: null,
   isInitialized: false,
   isPausedInternal: false,
+  currentSymbol: "BTCUSDT",
 };
 
-function resetInternal(preservePaused = false) {
+function resetInternal(preservePaused = false, newSymbol?: string) {
   const wasPaused = internal.isPausedInternal;
   internal = {
     bidsMap: new Map(),
@@ -82,6 +85,7 @@ function resetInternal(preservePaused = false) {
     reconnectTimeout: null,
     isInitialized: false,
     isPausedInternal: preservePaused ? wasPaused : false,
+    currentSymbol: newSymbol ?? internal.currentSymbol,
   };
 }
 
@@ -110,6 +114,12 @@ export const useOrderbookStore = create<OrderbookState>()(
     };
 
     const handleDelta = (delta: DepthDelta) => {
+      // Ignore deltas from different symbols (prevents race condition on symbol change)
+      if (delta.s !== internal.currentSymbol) {
+        console.debug(`[orderbook] Ignoring delta for ${delta.s}, current symbol is ${internal.currentSymbol}`);
+        return;
+      }
+
       if (!internal.isInitialized) {
         if (internal.pendingDeltas.length < MAX_PENDING_DELTAS) {
           internal.pendingDeltas.push(delta);
@@ -208,6 +218,14 @@ export const useOrderbookStore = create<OrderbookState>()(
     const scheduleReconnect = () => {
       if (internal.isIntentionalClose || internal.reconnectTimeout) return;
 
+      if (internal.reconnectAttempt >= MAX_RECONNECT_ATTEMPTS) {
+        set({
+          status: "error",
+          error: new Error("Connection failed after multiple attempts"),
+        });
+        return;
+      }
+
       const delay = getReconnectDelay();
       internal.reconnectTimeout = setTimeout(() => {
         internal.reconnectTimeout = null;
@@ -239,7 +257,7 @@ export const useOrderbookStore = create<OrderbookState>()(
       setSymbol: (symbol: TradingPair) => {
         internal.isIntentionalClose = true;
         cleanup();
-        resetInternal(true);
+        resetInternal(true, symbol);
 
         set({
           symbol,
